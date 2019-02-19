@@ -1,24 +1,32 @@
-  checking for new data...
-import httplib, urllib, time, random
+<?php
+  $API_KEY = '32c83590-8198-47f6-990d-c4396f3abd9a';
+  $PAGE_ID = 'djp8vk59r4vq';
+  $METRIC_ID = 'gc80d08g3ylx';
+  $BASE_URI = 'https://api.statuspage.io/v1';
  
-# the following 4 are the actual values that pertain to your account and this specific metric
-api_key = '32c83590-8198-47f6-990d-c4396f3abd9a'
-page_id = 'djp8vk59r4vq'
-metric_id = 'gc80d08g3ylx'
-api_base = 'api.statuspage.io'
+  $ch = curl_init(sprintf("%s/pages/%s/metrics/%s/data.json", $BASE_URI, $PAGE_ID, $METRIC_ID));
+  curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+      "Authorization: OAuth " . $API_KEY,
+      "Expect: 100-continue"
+    )
+  );
+  curl_setopt($ch, CURLOPT_POST, true);
+  curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
  
-# need 1 data point every 5 minutes
-# submit random data for the whole day
-total_points = (60 / 5 * 24)
-for i in range(total_points):
-  ts = int(time.time()) - (i * 5 * 60)
-  value = random.randint(0, 99)
-  params = urllib.urlencode({'data[timestamp]': ts, 'data[value]': value})
-  headers = {"Content-Type": "application/x-www-form-urlencoded", "Authorization": "OAuth " + api_key}
+  // need at least 1 data point for every 5 minutes
+  // submit random data for the whole day
+  $total_points = (60 / 5 * 24);
+  for($i = 0; $i < $total_points; $i++) {
+    $ts = time() - ($i * 5 * 60);
+    $value = rand(0, 99);
+    $postparams = array(
+      "data[timestamp]" => $ts,
+      "data[value]" => $value
+    );
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $postparams);
+    curl_exec($ch);
  
-  conn = httplib.HTTPSConnection(api_base)
-  conn.request("POST", "/v1/pages/" + page_id + "/metrics/" + metric_id + "/data.json", params, headers)
-  response = conn.getresponse()
- 
-  print "Submitted point " + str(i + 1) + " of " + str(total_points)
-  time.sleep(1)
+    printf("Submitted point %d of %d\n", ($i + 1), $total_points);
+    sleep(1);
+  }
+?>
